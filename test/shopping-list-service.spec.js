@@ -82,6 +82,52 @@ describe(`Shopping List service object`, function() {
                 .insert(testShoppingListItems)
         })
 
+        it(`updateItem() updates an item from the 'shopping_list' table`, () => {
+            const idOfItemToUpdate = 2
+            const newItemData = {
+                name: 'NEW Fish', 
+                price: '80.00', 
+                date_added: new Date(),              
+                checked: false,          
+                category: 'Breakfast',
+            }
+            return ShoppingListService.updateItem(db, idOfItemToUpdate, newItemData)
+                .then(() => ShoppingListService.getById(db, idOfItemToUpdate))
+                .then(item => {
+                    expect(item).to.eql({
+                      id: idOfItemToUpdate,
+                      ...newItemData,  
+                    })
+                })
+        })
+
+        it(`deleteItem() removes an item by id from 'shopping_list' table`, () => {
+            const itemId = 2
+            return ShoppingListService.deleteItem(db, itemId)
+                .then(() => ShoppingListService.getAllShoppingItems(db))
+                .then(allItems => {
+                    // copy the test items array w/o the 'deleted item'
+                    const expected = testShoppingListItems.filter(item => item.id !== itemId)
+                    expect(allItems).to.eql(expected)
+                })
+        })
+
+        it(`getById() resolves an article by id from 'shopping_list' table)`, () => {
+            const secondId = 2
+            const secondTestItem = testShoppingListItems[secondId - 1]
+            return ShoppingListService.getById(db, secondId)
+                .then(actual => {
+                    expect(actual).to.eql({
+                        id: secondId,
+                        name: secondTestItem.name,
+                        price: secondTestItem.price,
+                        date_added: secondTestItem.date_added,
+                        checked: secondTestItem.checked,
+                        category: secondTestItem.category,
+                    })
+                })
+        })
+
         it(`getAllShoppingItems() resolves all items 'shopping_list' table`, () => {
             // test that ShoppingListService.getAllShoppingItems get data from table
             return ShoppingListService.getAllShoppingItems(db)
